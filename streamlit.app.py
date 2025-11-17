@@ -109,24 +109,21 @@ if prompt := st.chat_input("Ask your question here..."):
                 for msg in st.session_state.messages
             ]
 
-            # from openai import OpenAI
-
-             client = OpenAI(api_key=api_key)
-             response = client.chat.completions.create(
-             model="gpt-3.5-turbo",
-             messages=st.session_state.messages,
-             temperature=0.7,
-             max_tokens=1000,
-             stream=True
-)
-
-
+            # Call OpenAI API with streaming
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=api_messages,
+                temperature=0.7,
+                max_tokens=1000,
+                stream=True
+            )
 
             # Stream the response
             for chunk in response:
-                chunk_content = getattr(chunk.choices[0].delta, "content", "")
-                full_response += chunk_content
-                message_placeholder.markdown(full_response + "▌")
+                if chunk.choices[0].delta.get("content"):
+                    full_response += chunk.choices[0].delta.content
+                    message_placeholder.markdown(full_response + "▌")
+
             # Display final response
             message_placeholder.markdown(full_response)
 
